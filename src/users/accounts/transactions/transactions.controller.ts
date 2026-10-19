@@ -10,7 +10,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import express from 'express';
-import { TransactionService } from './transactions.service';
+import { TransactionsService } from './transactions.service';
 import { TransactionCreateDto } from './dto/transaction-create.dto';
 import { plainToInstance } from 'class-transformer';
 import { TransactionResponseDto } from './dto/transaction-response.dto';
@@ -19,7 +19,7 @@ import { ApiOperation } from '@nestjs/swagger';
 
 @Controller('users/:userId/accounts/:accountId/transactions/')
 export class TransactionsController {
-  constructor(private readonly transactionService: TransactionService) {}
+  constructor(private readonly transactionService: TransactionsService) {}
   @Post()
   @ApiOperation({ description: 'Create a transaction' })
   @UseGuards(AuthGuard)

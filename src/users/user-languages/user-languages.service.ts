@@ -30,7 +30,7 @@ export class UserLanguagesService {
       languageId: assignLanguageDto.languageId,
     });
 
-    return await this.userLanguageRepository.save(userLanguage);
+    return this.userLanguageRepository.save(userLanguage);
   }
 
   async remove(userId: number, languageId: number): Promise<void> {
