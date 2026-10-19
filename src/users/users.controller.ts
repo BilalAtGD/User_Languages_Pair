@@ -14,7 +14,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import express from 'express';
-import { UserService } from './users.service';
+import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user-dto';
 import { UpdateUserDto } from './dto/update-user-dto';
 import { UserResponseDto } from './dto/user-responce-dto';
@@ -25,7 +25,7 @@ import { ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 
 @Controller('users')
 export class UsersController {
-  constructor(private readonly userService: UserService) {}
+  constructor(private readonly userService: UsersService) {}
 
   @Post('/signup')
   @ApiOperation({

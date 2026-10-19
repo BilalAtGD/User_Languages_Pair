@@ -5,16 +5,15 @@ import {
   NotFoundException,
   Req,
 } from '@nestjs/common';
-import { Transaction } from '../../../database/core/entities/transactions.entity';
+import { Transaction } from '../../../database/core/entities/transaction.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
-import { Account } from '../../../database/core/entities/accounts.entity';
+import { Account } from '../../../database/core/entities/account.entity';
 
-import { TransactionCreateDto } from './dto/transaction-create-dto';
-
+import { TransactionCreateDto } from './dto/transaction-create.dto';
 
 @Injectable()
-export class TransactionService {
+export class TransactionsService {
   constructor(
     @InjectRepository(Transaction)
     private readonly tranactionRepository: Repository<Transaction>,
@@ -81,7 +80,7 @@ export class TransactionService {
 
       return savedTransaction;
     } catch (err) {
-      console.log(err)
+      console.log(err);
       await queryRunner.rollbackTransaction();
       throw new InternalServerErrorException(err);
     } finally {
@@ -139,7 +138,12 @@ export class TransactionService {
       },
     });
   }
-  async delete(userId:number,accountId:number,transactionId:number,userIdFromToken: number):Promise<void>{
+  async delete(
+    userId: number,
+    accountId: number,
+    transactionId: number,
+    userIdFromToken: number,
+  ): Promise<void> {
     if (userId !== userIdFromToken) {
       throw new BadRequestException(
         'You are not allowed to delete this user account transaction',
@@ -147,19 +151,22 @@ export class TransactionService {
     }
 
     const account = await this.accountRepository.findOne({
-        where: { user: { id: userId }, id: accountId },
+      where: { user: { id: userId }, id: accountId },
     });
 
     if (!account) {
-      throw new NotFoundException(`You have no account in our system with account-id ${accountId}`);
+      throw new NotFoundException(
+        `You have no account in our system with account-id ${accountId}`,
+      );
     }
-    const transaction=await this.tranactionRepository.findOne({
-      where:{fromAccount : {id:accountId}}
-    })
-    if(!transaction){
-      throw new NotFoundException(`Transaction with id ${transactionId} not present in your account`)
+    const transaction = await this.tranactionRepository.findOne({
+      where: { fromAccount: { id: accountId } },
+    });
+    if (!transaction) {
+      throw new NotFoundException(
+        `Transaction with id ${transactionId} not present in your account`,
+      );
     }
-    await this.tranactionRepository.delete(transaction)
-
+    await this.tranactionRepository.delete(transaction);
   }
 }

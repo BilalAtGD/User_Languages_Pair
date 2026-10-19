@@ -1,28 +1,29 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { UserLanguage } from '../../database/core/entities/user-languages.entity';
-import { AssignLanguageDto } from './dto/assign-language-dto';
+import { UserLanguage } from '../../database/core/entities/user-language.entity';
+import { AssignLanguageDto } from './dto/assign-language.dto';
 import { Language } from '../../database/core/entities/language.entity';
 
 @Injectable()
-export class UserLanguageService {
+export class UserLanguagesService {
   constructor(
     @InjectRepository(UserLanguage)
     private readonly userLanguageRepository: Repository<UserLanguage>,
-    @InjectRepository(Language) private readonly languageRepository:Repository<Language>
+    @InjectRepository(Language)
+    private readonly languageRepository: Repository<Language>,
   ) {}
 
   async create(
     userId: number,
     assignLanguageDto: AssignLanguageDto,
   ): Promise<UserLanguage> {
+    const language = await this.languageRepository.findOne({
+      where: { id: assignLanguageDto.languageId },
+    });
 
-    const language=await this.languageRepository.findOne({where : {id:assignLanguageDto.languageId}})
-    
-    if (!language){
-      throw new NotFoundException("There is no language with this specific id")
-
+    if (!language) {
+      throw new NotFoundException('There is no language with this specific id');
     }
     const userLanguage = this.userLanguageRepository.create({
       userId,
@@ -44,20 +45,19 @@ export class UserLanguageService {
 
   async getAll(userId: number): Promise<UserLanguage[]> {
     const userLanguages = await this.userLanguageRepository.find({
-      where: { userId: userId }
-      
+      where: { userId: userId },
     });
-    console.log(userLanguages)
+    console.log(userLanguages);
     return userLanguages;
   }
-  async getOne(userId: number,languageId:number): Promise<UserLanguage[]> {
+  async getOne(userId: number, languageId: number): Promise<UserLanguage[]> {
     const userLanguages = await this.userLanguageRepository.find({
-      where: { userId: userId,languageId:languageId },
+      where: { userId: userId, languageId: languageId },
       relations: {
         language: true,
       },
     });
-    console.log(userLanguages)
+    console.log(userLanguages);
     return userLanguages;
   }
 }

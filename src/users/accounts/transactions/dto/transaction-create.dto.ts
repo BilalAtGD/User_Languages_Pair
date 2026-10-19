@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsNumber, Min, Max } from 'class-validator';
+import { IsNotEmpty, IsNumber } from 'class-validator';
 
 export class TransactionCreateDto {
   @IsNumber()

@@ -1,9 +1,9 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
-import { UserModule } from './user/users.module';
+import { UsersModule } from './users/users.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { LanaguagesModule } from './language/language.module';
+import { LanaguagesModule } from './languages/languages.module';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 
 @Module({
@@ -42,7 +42,7 @@ import { EventEmitterModule } from '@nestjs/event-emitter';
         autoLoadEntities: true,
       }),
     }),
-    UserModule,
+    UsersModule,
     LanaguagesModule,
     EventEmitterModule.forRoot({
       wildcard: false,

@@ -10,10 +10,10 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import express from 'express';
-import { TransactionService } from './transaction.service';
-import { TransactionCreateDto } from './dto/transaction-create-dto';
+import { TransactionService } from './transactions.service';
+import { TransactionCreateDto } from './dto/transaction-create.dto';
 import { plainToInstance } from 'class-transformer';
-import { TransactionResponseDto } from './dto/transaction-response-dto';
+import { TransactionResponseDto } from './dto/transaction-response.dto';
 import { AuthGuard } from '../../../guards/auth-guard';
 import { ApiOperation } from '@nestjs/swagger';
 
@@ -21,7 +21,7 @@ import { ApiOperation } from '@nestjs/swagger';
 export class TransactionsController {
   constructor(private readonly transactionService: TransactionService) {}
   @Post()
-  @ApiOperation({description:"Create a transaction"})
+  @ApiOperation({ description: 'Create a transaction' })
   @UseGuards(AuthGuard)
   async create(
     @Param('userId', ParseIntPipe) userId: number,
@@ -29,21 +29,16 @@ export class TransactionsController {
     @Req() req: express.Request,
     @Body() transactionRequest: TransactionCreateDto,
   ) {
-
-
-      const transaction = await this.transactionService.create(
+    const transaction = await this.transactionService.create(
       userId,
       accountId,
       req,
-      transactionRequest)
-      return plainToInstance(
-        TransactionResponseDto,transaction)
-
-   
-    
+      transactionRequest,
+    );
+    return plainToInstance(TransactionResponseDto, transaction);
   }
   @Get()
-  @ApiOperation({description:"Get all tranactions for an account"})
+  @ApiOperation({ description: 'Get all tranactions for an account' })
   @UseGuards(AuthGuard)
   async getAll(
     @Param('userId', ParseIntPipe) userId: number,
@@ -58,7 +53,7 @@ export class TransactionsController {
     return plainToInstance(TransactionResponseDto, transactions);
   }
   @Get(':toAccountId')
-  @ApiOperation({description:"Get all tranactions with a specfic account"})
+  @ApiOperation({ description: 'Get all tranactions with a specfic account' })
   @UseGuards(AuthGuard)
   async getOne(
     @Param('userId', ParseIntPipe) userId: number,
@@ -78,12 +73,16 @@ export class TransactionsController {
   @Delete(':id')
   @UseGuards(AuthGuard)
   async delete(
-    @Param('userId',ParseIntPipe) userId:number,
-    @Param('accountId',ParseIntPipe) accountId:number,
-    @Param('id',ParseIntPipe) id:number,
-    @Req() req:express.Request
-  ):Promise<void>{
-
-      await this.transactionService.delete(userId,accountId,id,(req as any).user.userId);
+    @Param('userId', ParseIntPipe) userId: number,
+    @Param('accountId', ParseIntPipe) accountId: number,
+    @Param('id', ParseIntPipe) id: number,
+    @Req() req: express.Request,
+  ): Promise<void> {
+    await this.transactionService.delete(
+      userId,
+      accountId,
+      id,
+      (req as any).user.userId,
+    );
   }
 }

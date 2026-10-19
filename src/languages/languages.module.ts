@@ -1,14 +1,14 @@
 import { ModuleMetadata, Module } from '@nestjs/common';
 import {} from '@nestjs/common';
-import { LanguageService } from './language.service';
-import { LanguagesController } from './language.controller';
+import { LanguagesService } from './languages.service';
+import { LanguagesController } from './languages.controller';
 import { Language } from '../database/core/entities/language.entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
 @Module({
   imports: [TypeOrmModule.forFeature([Language])],
-  providers: [LanguageService],
+  providers: [LanguagesService],
   controllers: [LanguagesController],
-  exports: [LanguageService]
+  exports: [LanguagesService],
 })
 export class LanaguagesModule {}

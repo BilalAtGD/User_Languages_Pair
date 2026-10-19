@@ -9,25 +9,24 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { UserLanguage } from './user-languages.entity';
-import { Account } from './accounts.entity';
+import { UserLanguage } from './user-language.entity';
+import { Account } from './account.entity';
 
 @Entity('users')
 export class User {
-  @PrimaryGeneratedColumn({name:'id'})
+  @PrimaryGeneratedColumn({ name: 'id' })
   id: number;
 
-  @Column({name:"name"})
+  @Column({ name: 'name' })
   name: string;
 
-
-  @Column({ name:"email",unique: true })
+  @Column({ name: 'email', unique: true })
   email: string;
 
-  @Column({name : "role",default:"User"})
-  role:string;
-  
-  @Column({name:"password"})
+  @Column({ name: 'role', default: 'User' })
+  role: string;
+
+  @Column({ name: 'password' })
   password: string;
 
   @OneToMany(() => UserLanguage, (userLanguage) => userLanguage.user)
@@ -36,19 +35,17 @@ export class User {
   @OneToMany(() => Account, (account) => account.user)
   account: Account[];
 
-    @CreateDateColumn({
-      name:"created_at",
-      type: 'timestamptz',
-      precision:3
-    })
-    createdAt: Date;
-  
-    @UpdateDateColumn({
-      name:"updated_at",
-      type: 'timestamptz',
-      precision:3
-    })
-    updatedAt: Date;
+  @CreateDateColumn({
+    name: 'created_at',
+    type: 'timestamptz',
+    precision: 3,
+  })
+  createdAt: Date;
 
- 
+  @UpdateDateColumn({
+    name: 'updated_at',
+    type: 'timestamptz',
+    precision: 3,
+  })
+  updatedAt: Date;
 }

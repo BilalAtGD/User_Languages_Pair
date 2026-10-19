@@ -14,19 +14,19 @@ import {
 } from '@nestjs/common';
 import express from 'express';
 import { plainToInstance } from 'class-transformer';
-import { UserLanguageService } from './user-language-service';
-import { AssignLanguageDto } from './dto/assign-language-dto';
+import { UserLanguagesService } from './user-languages.service';
+import { AssignLanguageDto } from './dto/assign-language.dto';
 import { AuthGuard } from '../../guards/auth-guard';
 
-import { UserLanguageResponse } from './dto/user-language-response-dto';
+import { UserLanguageResponse } from './dto/user-language-response.dto';
 import { ApiOperation } from '@nestjs/swagger';
 
 @Controller('users/:userId/user-languages')
 export class UserLanguagesController {
-  constructor(private readonly userLanguageService: UserLanguageService) {}
+  constructor(private readonly userLanguageService: UserLanguagesService) {}
 
   @Post()
-  @ApiOperation({description:"Assign Language to a user"})
+  @ApiOperation({ description: 'Assign Language to a user' })
   @UseGuards(AuthGuard)
   async create(
     @Param('userId', ParseIntPipe) userId: number,
@@ -40,7 +40,6 @@ export class UserLanguagesController {
       );
     }
 
-    
     const userLanguage = await this.userLanguageService.create(
       userId,
       assignLanguageDto,
@@ -49,7 +48,7 @@ export class UserLanguagesController {
   }
 
   @Get()
-  @ApiOperation({description:"Get all languages for a user"})
+  @ApiOperation({ description: 'Get all languages for a user' })
   @UseGuards(AuthGuard)
   async getAll(
     @Param('userId', ParseIntPipe) userId: number,
@@ -62,13 +61,12 @@ export class UserLanguagesController {
       );
     }
     const userLanguages = await this.userLanguageService.getAll(userId);
-    
+
     return plainToInstance(UserLanguageResponse, userLanguages);
-    
   }
 
   @Get(':id')
-  @ApiOperation({description:"Get one user language pair"})
+  @ApiOperation({ description: 'Get one user language pair' })
   @UseGuards(AuthGuard)
   async getOne(
     @Param('userId', ParseIntPipe) userId: number,
@@ -81,14 +79,17 @@ export class UserLanguagesController {
         'You are not allowed to see languages of this user',
       );
     }
-    const userLanguages = await this.userLanguageService.getOne(userId,languageId);
-    
+    const userLanguages = await this.userLanguageService.getOne(
+      userId,
+      languageId,
+    );
+
     return plainToInstance(UserLanguageResponse, userLanguages);
   }
 
   @Delete(':id')
   @ApiOperation({
-    description:"Delete one user language"
+    description: 'Delete one user language',
   })
   @UseGuards(AuthGuard)
   @HttpCode(HttpStatus.NO_CONTENT)
@@ -106,5 +107,3 @@ export class UserLanguagesController {
     await this.userLanguageService.remove(userId, languageId);
   }
 }
-
-

@@ -13,18 +13,18 @@ import { randomBytes, scrypt } from 'crypto';
 import { SignInDto } from './dto/signin-dto';
 import { JwtService } from '@nestjs/jwt';
 
-import { EventEmitter2 } from '@nestjs/event-emitter';
+
 
 
 @Injectable()
-export class UserService {
+export class UsersService {
   constructor(
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
 
     private readonly jwtService: JwtService,
 
-    private eventEmitter: EventEmitter2,
+    
   ) {}
 
   async getAll(): Promise<User[]> {

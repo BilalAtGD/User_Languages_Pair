@@ -1,5 +1,5 @@
 import { Exclude, Expose, Type } from 'class-transformer';
-import { LanguageResponseDto } from '../../../language/dto/language-response-dto';
+import { LanguageResponseDto } from '../../../languages/dto/language-response.dto';
 
 @Exclude()
 export class UserLanguageResponse {
@@ -13,4 +13,3 @@ export class UserLanguageResponse {
   @Type(() => LanguageResponseDto)
   language: LanguageResponseDto;
 }
-

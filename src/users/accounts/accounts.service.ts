@@ -5,14 +5,14 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Account } from '../../database/core/entities/accounts.entity';
+import { Account } from '../../database/core/entities/account.entity';
 
-import { UpdateBalanceDto } from './dto/balance-update-dto';
-import { CreateAccountDto } from './dto/create-account-dto';
+import { UpdateBalanceDto } from './dto/balance-update.dto';
+import { CreateAccountDto } from './dto/create-account.dto';
 import { User } from '../../database/core/entities/user.entity';
 
 @Injectable()
-export class AccountService {
+export class AccountsService {
   constructor(
     @InjectRepository(Account)
     private readonly accountRepository: Repository<Account>,
@@ -84,8 +84,10 @@ export class AccountService {
     });
     try {
       await this.accountRepository.save(newAccount);
-    } catch(err) {
-      throw new BadRequestException(`That account is not being created as due to following DB constraint ${err}`);
+    } catch (err) {
+      throw new BadRequestException(
+        `That account is not being created as due to following DB constraint ${err}`,
+      );
     }
   }
   async update(

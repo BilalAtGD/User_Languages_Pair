@@ -12,23 +12,22 @@ import {
   ParseIntPipe,
   Req,
 } from '@nestjs/common';
-import { LanguageService } from './language.service';
-import { CreateLanguageDto } from './dto/create-language-dto';
-import { LanguageResponseDto } from './dto/language-response-dto';
+import { LanguagesService } from './languages.service';
+import { CreateLanguageDto } from './dto/create-language.dto';
+import { LanguageResponseDto } from './dto/language-response.dto';
 import { plainToInstance } from 'class-transformer';
-import { UpdateLanguageDto } from './dto/update-language-dto';
+import { UpdateLanguageDto } from './dto/update-language.dto';
 import { AuthGuard } from '../guards/auth-guard';
 
 import { AdminGuard } from '../guards/admin-guard';
 @Controller('languages')
 export class LanguagesController {
-  constructor(private readonly languageService: LanguageService) {}
+  constructor(private readonly languageService: LanguagesService) {}
 
   @Post()
   @UseGuards(AdminGuard)
   async create(
-    @Body() createLanguage: CreateLanguageDto
-    
+    @Body() createLanguage: CreateLanguageDto,
   ): Promise<LanguageResponseDto> {
     const language = await this.languageService.create(createLanguage);
     return plainToInstance(LanguageResponseDto, language);
@@ -45,7 +44,7 @@ export class LanguagesController {
   @UseGuards(AuthGuard)
   async getOne(
     @Param('id', ParseIntPipe) id: number,
-  ) : Promise<LanguageResponseDto> {
+  ): Promise<LanguageResponseDto> {
     const language = await this.languageService.getOne(id);
     return plainToInstance(LanguageResponseDto, language);
   }
