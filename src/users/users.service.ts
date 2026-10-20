@@ -1,20 +1,21 @@
 import {
   BadRequestException,
   ConflictException,
+  HttpException,
+  HttpStatus,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { QueryFailedError, Repository } from 'typeorm';
 import { User } from '../database/core/entities/user.entity';
 import { CreateUserDto } from './dto/create-user-dto';
 import { UpdateUserDto } from './dto/update-user-dto';
 import { randomBytes, scrypt } from 'crypto';
 import { SignInDto } from './dto/signin-dto';
 import { JwtService } from '@nestjs/jwt';
-
-
-
+import { error } from 'console';
+import { errorCodes } from '../utils/db-errors';
 
 @Injectable()
 export class UsersService {
@@ -23,12 +24,10 @@ export class UsersService {
     private readonly userRepository: Repository<User>,
 
     private readonly jwtService: JwtService,
-
-    
   ) {}
 
   async getAll(): Promise<User[]> {
-    return await this.userRepository.find();
+    return this.userRepository.find();
   }
 
   async signIn(signInRequest: SignInDto): Promise<string> {
@@ -54,15 +53,18 @@ export class UsersService {
     const payload = {
       userId: existing.id,
       email: existing.email,
-      role: existing.role,
     };
 
-    const accessToken = await this.jwtService.signAsync(payload);
-
-    return accessToken;
+    return this.jwtService.signAsync(payload);
   }
 
-  async getOne(id: number): Promise<User> {
+  async getOne(id: number, userIdFromToken: number): Promise<User> {
+    if (id !== userIdFromToken) {
+      throw new BadRequestException(
+        'You are not allowed to see this user account',
+      );
+    }
+
     const user = await this.userRepository.findOne({
       where: { id },
     });
@@ -75,15 +77,6 @@ export class UsersService {
   }
 
   async signUp(createUser: CreateUserDto): Promise<User> {
-    const existing = await this.userRepository.findOne({
-      where: { email: createUser.email },
-    });
-    if (existing) {
-      throw new ConflictException(
-        `User with the email ${existing.email} already exists`,
-      );
-    }
-
     const salt = randomBytes(8).toString('hex');
 
     const hash = await new Promise<Buffer>((resolve, reject) => {
@@ -96,26 +89,45 @@ export class UsersService {
     const result = salt + '.' + hash.toString('hex');
     createUser.password = result;
 
-    const user = this.userRepository.create(createUser);
+    try {
+      const userModel = this.userRepository.create(createUser);
+      return await this.userRepository.save(userModel);
+    } catch (e) {
+      if (e instanceof QueryFailedError) {
+        const driverError = e.driverError as { code?: string };
 
-    const returnedUser = await this.userRepository.save(user);
+        if (driverError.code === errorCodes.DUPLICATE_REQUEST) {
+          throw new HttpException(
+            'User with that email already exists',
+            HttpStatus.CONFLICT,
+          );
+        }
 
-    
+        throw new HttpException(
+          'Some error has happened',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
 
-    return returnedUser;
+      throw new Error('Failed Request');
+    }
   }
 
-  async update(id: number, updatedData: UpdateUserDto): Promise<User> {
-    const user = await this.getOne(id);
-    if(updatedData.name){
+  async update(
+    id: number,
+    updatedData: UpdateUserDto,
+    userIdFromToken: number,
+  ): Promise<User> {
+    const user = await this.getOne(id, userIdFromToken);
+    if (updatedData.name) {
       user.name = updatedData.name;
     }
-    
+
     return this.userRepository.save(user);
   }
 
-  async remove(id: number): Promise<void> {
-    const user = await this.getOne(id);
+  async remove(id: number, userIdFromToken: number): Promise<void> {
+    const user = await this.getOne(id, userIdFromToken);
     await this.userRepository.remove(user);
   }
 }

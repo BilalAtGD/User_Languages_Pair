@@ -42,10 +42,5 @@ export class User {
   })
   createdAt: Date;
 
-  @UpdateDateColumn({
-    name: 'updated_at',
-    type: 'timestamptz',
-    precision: 3,
-  })
-  updatedAt: Date;
+  
 }

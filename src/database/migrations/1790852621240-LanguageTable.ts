@@ -7,12 +7,15 @@ export class LanguageTable1790852621240 implements MigrationInterface {
              ("id" SERIAL NOT NULL, 
              "name" character varying NOT NULL, 
              "code" character varying NOT NULL, 
-             CONSTRAINT "UQ_9c0e155475f0aa782e4a6178969" UNIQUE ("name"), 
-             CONSTRAINT "PK_b517f827ca496b29f4d549c631d" PRIMARY KEY ("id"))`);
+             "created_at" TIMESTAMP(3) WITH TIME ZONE NOT NULL DEFAULT now(),
+             CONSTRAINT "UQ_language_name" UNIQUE ("name"), 
+             CONSTRAINT "PK_language_id" PRIMARY KEY ("id"))`);
     }
 
     public async down(queryRunner: QueryRunner): Promise<void> {
-        await queryRunner.query("DROP TABLE 'lanaguages'")
+        await queryRunner.query(`ALTER TABLE "languages" DROP CONSTRAINT "UQ_language_name"`)
+        await queryRunner.query(`ALTER TABLE "languages" DROP CONSTRAINT "PK_language_id"`)
+        await queryRunner.query(`DROP TABLE "lanaguages"`)
     }
 
 }

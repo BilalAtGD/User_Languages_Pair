@@ -35,7 +35,7 @@ export class TransactionsService {
     }
 
     const fromAccount = await this.accountRepository.findOne({
-      where: { user: { id: userId }, id: accountId },
+      where: { userId, id: accountId },
     });
     if (!fromAccount) {
       throw new BadRequestException('This user has no access to this account');
@@ -66,8 +66,8 @@ export class TransactionsService {
       await queryRunner.manager.save(Account, toAccount);
 
       const transaction = queryRunner.manager.create(Transaction, {
-        fromAccount,
-        toAccount,
+        fromAccountId: accountId,
+        toAccountId: transactionRequest.toAccountId,
         amount: transactionRequest.amount,
       });
 
@@ -80,7 +80,7 @@ export class TransactionsService {
 
       return savedTransaction;
     } catch (err) {
-      console.log(err);
+      
       await queryRunner.rollbackTransaction();
       throw new InternalServerErrorException(err);
     } finally {
@@ -101,14 +101,14 @@ export class TransactionsService {
     }
 
     const fromAccount = await this.accountRepository.findOne({
-      where: { user: { id: userId }, id: accountId },
+      where: { userId, id: accountId },
     });
 
     if (!fromAccount) {
       throw new BadRequestException('This user has no access to this account');
     }
     return this.tranactionRepository.find({
-      where: { fromAccount: { id: accountId } },
+      where: { fromAccountId: accountId },
     });
   }
   async getOne(
@@ -124,8 +124,8 @@ export class TransactionsService {
       );
     }
 
-    const fromAccount = await this.tranactionRepository.findOne({
-      where: { fromAccount: { id: userId }, id: accountId },
+    const fromAccount = await this.accountRepository.findOne({
+      where: { userId, id: accountId },
     });
 
     if (!fromAccount) {
@@ -133,8 +133,8 @@ export class TransactionsService {
     }
     return this.tranactionRepository.find({
       where: {
-        fromAccount: { id: accountId },
-        toAccount: { id: toAccountId },
+        fromAccountId: accountId,
+        toAccountId: toAccountId,
       },
     });
   }
@@ -151,7 +151,7 @@ export class TransactionsService {
     }
 
     const account = await this.accountRepository.findOne({
-      where: { user: { id: userId }, id: accountId },
+      where: { userId, id: accountId },
     });
 
     if (!account) {
@@ -160,7 +160,7 @@ export class TransactionsService {
       );
     }
     const transaction = await this.tranactionRepository.findOne({
-      where: { fromAccount: { id: accountId } },
+      where: { fromAccountId: accountId },
     });
     if (!transaction) {
       throw new NotFoundException(

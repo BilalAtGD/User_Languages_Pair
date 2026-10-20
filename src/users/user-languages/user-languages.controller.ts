@@ -33,14 +33,10 @@ export class UserLanguagesController {
     @Body() assignLanguageDto: AssignLanguageDto,
     @Req() req: express.Request,
   ): Promise<UserLanguageResponse> {
-    const currentUser = (req as any).user;
-    if (currentUser?.userId !== userId) {
-      throw new BadRequestException(
-        'You are not allowed to add language to this user',
-      );
-    }
+    
 
     const userLanguage = await this.userLanguageService.create(
+      (req as any).user.userId,
       userId,
       assignLanguageDto,
     );
@@ -54,13 +50,8 @@ export class UserLanguagesController {
     @Param('userId', ParseIntPipe) userId: number,
     @Req() req: express.Request,
   ): Promise<UserLanguageResponse[]> {
-    const currentUser = (req as any).user;
-    if (currentUser?.userId !== userId) {
-      throw new BadRequestException(
-        'You are not allowed to see languages of this user',
-      );
-    }
-    const userLanguages = await this.userLanguageService.getAll(userId);
+    
+    const userLanguages = await this.userLanguageService.getAll(userId,(req as any).user.userId);
 
     return plainToInstance(UserLanguageResponse, userLanguages);
   }
@@ -73,15 +64,11 @@ export class UserLanguagesController {
     @Param('id', ParseIntPipe) languageId: number,
     @Req() req: express.Request,
   ): Promise<UserLanguageResponse[]> {
-    const currentUser = (req as any).user;
-    if (currentUser?.userId !== userId) {
-      throw new BadRequestException(
-        'You are not allowed to see languages of this user',
-      );
-    }
+    
     const userLanguages = await this.userLanguageService.getOne(
       userId,
       languageId,
+      (req as any).user.userId,
     );
 
     return plainToInstance(UserLanguageResponse, userLanguages);
@@ -98,12 +85,7 @@ export class UserLanguagesController {
     @Param('id', ParseIntPipe) languageId: number,
     @Req() req: express.Request,
   ): Promise<void> {
-    const currentUser = (req as any).user;
-    if (currentUser?.userId !== userId) {
-      throw new BadRequestException(
-        'You are not allowed to delete language to this user',
-      );
-    }
-    await this.userLanguageService.remove(userId, languageId);
+   
+    await this.userLanguageService.remove(userId, languageId,(req as any).user.userId);
   }
 }

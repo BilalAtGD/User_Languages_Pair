@@ -32,7 +32,7 @@ export class UsersController {
     description : "Create a new User"
   })
   async signUp(@Body() createUser: CreateUserDto): Promise<UserResponseDto> {
-    const user = await this.userService.signUp(createUser);
+  const user = await this.userService.signUp(createUser);
     return plainToInstance(UserResponseDto, user);
   }
 
@@ -64,11 +64,8 @@ export class UsersController {
     @Param('id', ParseIntPipe) id: number,
     @Req() req: express.Request,
   ): Promise<UserResponseDto> {
-    const currentUser = (req as any).user;
-    if (currentUser?.userId !== id) {
-      throw new BadRequestException('You are not allowed to see this user');
-    }
-    const user = await this.userService.getOne(id);
+    
+    const user = await this.userService.getOne(id,(req as any).user.userId);
     return plainToInstance(UserResponseDto, user);
   }
 
@@ -81,11 +78,8 @@ export class UsersController {
     @Body() updatedData: UpdateUserDto,
     @Req() req: express.Request,
   ) {
-    const currentUser = (req as any).user;
-    if (currentUser?.userId !== id) {
-      throw new BadRequestException('You are not allowed to change this user');
-    }
-    const user = await this.userService.update(id, updatedData);
+    
+    const user = await this.userService.update(id, updatedData,(req as any).user.userId);
     return plainToInstance(UserResponseDto, user);
   }
 
@@ -99,10 +93,7 @@ export class UsersController {
     @Param('id', ParseIntPipe) id: number,
     @Req() req: express.Request,
   ): Promise<void> {
-    const currentUser = (req as any).user;
-    if (currentUser?.userId !== id) {
-      throw new BadRequestException('You are not allowed to delete this user');
-    }
-    return await this.userService.remove(id);
+    
+    return await this.userService.remove(id,(req as any).user.userId);
   }
 }

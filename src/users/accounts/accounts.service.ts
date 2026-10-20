@@ -1,23 +1,23 @@
 import {
   BadRequestException,
+  HttpException,
+  HttpStatus,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { QueryFailedError, Repository } from 'typeorm';
 import { Account } from '../../database/core/entities/account.entity';
 
 import { UpdateBalanceDto } from './dto/balance-update.dto';
 import { CreateAccountDto } from './dto/create-account.dto';
-import { User } from '../../database/core/entities/user.entity';
+import { errorCodes } from '../../utils/db-errors';
 
 @Injectable()
 export class AccountsService {
   constructor(
     @InjectRepository(Account)
     private readonly accountRepository: Repository<Account>,
-    @InjectRepository(User)
-    private readonly userRepository: Repository<User>,
   ) {}
   async getAllByUserId(userId: number, id: number): Promise<Account[]> {
     if (userId !== id) {
@@ -27,7 +27,7 @@ export class AccountsService {
     }
 
     const accounts = await this.accountRepository.find({
-      where: { user: { id: userId } },
+      where: { userId },
     });
 
     if (!accounts.length) {
@@ -50,7 +50,7 @@ export class AccountsService {
     }
 
     const account = await this.accountRepository.findOne({
-      where: { user: { id: userId }, id: accountId },
+      where: { userId, id: accountId },
     });
 
     if (!account) {
@@ -72,22 +72,30 @@ export class AccountsService {
       );
     }
 
-    const user = await this.userRepository.findOne({ where: { id: userId } });
-    if (!user) {
-      throw new NotFoundException(`User with id ${userId} was not found`);
-    }
-
     const newAccount = this.accountRepository.create({
       balance: 0,
       type: accountBody.type,
-      user: user,
+      userId,
     });
     try {
-      await this.accountRepository.save(newAccount);
-    } catch (err) {
-      throw new BadRequestException(
-        `That account is not being created as due to following DB constraint ${err}`,
-      );
+      return await this.accountRepository.save(newAccount);
+    } catch (e) {
+      if (e instanceof QueryFailedError) {
+        const driverError = e.driverError as { code?: string };
+        if (driverError.code == errorCodes.DUPLICATE_REQUEST) {
+          throw new HttpException(
+            'Account of this type for this specific user already exists',
+            HttpStatus.CONFLICT,
+          );
+        }
+
+        throw new HttpException(
+          'Some error has happened',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+
+      throw new Error("Failed Request");
     }
   }
   async update(
@@ -103,7 +111,7 @@ export class AccountsService {
     }
 
     const account = await this.accountRepository.findOne({
-      where: { user: { id: userId }, id: accountId },
+      where: { userId, id: accountId },
     });
 
     if (!account) {
@@ -113,7 +121,11 @@ export class AccountsService {
     }
 
     account.balance = updated.balance;
-    return this.accountRepository.save(account);
+    try {
+      return this.accountRepository.save(account);
+    } catch {
+      throw new Error('Internal Server Error');
+    }
   }
   async delete(
     userId: number,
@@ -126,7 +138,7 @@ export class AccountsService {
       );
     }
     const account = await this.accountRepository.findOne({
-      where: { id: accountId, user: { id: userId } },
+      where: { id: accountId, userId },
     });
     if (!account) {
       throw new NotFoundException(`You have no account with ${accountId}`);

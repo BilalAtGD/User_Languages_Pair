@@ -1,39 +1,48 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { UserLanguage } from '../../database/core/entities/user-language.entity';
 import { AssignLanguageDto } from './dto/assign-language.dto';
-import { Language } from '../../database/core/entities/language.entity';
+
 
 @Injectable()
 export class UserLanguagesService {
   constructor(
     @InjectRepository(UserLanguage)
     private readonly userLanguageRepository: Repository<UserLanguage>,
-    @InjectRepository(Language)
-    private readonly languageRepository: Repository<Language>,
+    
   ) {}
 
   async create(
+    userIdFromToken:number,
     userId: number,
     assignLanguageDto: AssignLanguageDto,
   ): Promise<UserLanguage> {
-    const language = await this.languageRepository.findOne({
-      where: { id: assignLanguageDto.languageId },
-    });
 
-    if (!language) {
-      throw new NotFoundException('There is no language with this specific id');
+    if(userIdFromToken!=userId){
+      throw new BadRequestException("You are not allowed to add languages to this user")
     }
+    
     const userLanguage = this.userLanguageRepository.create({
       userId,
       languageId: assignLanguageDto.languageId,
     });
 
-    return this.userLanguageRepository.save(userLanguage);
+    try{
+
+      return this.userLanguageRepository.save(userLanguage);
+    }
+    catch{
+      throw new BadRequestException(
+        "That pair already found"
+      )
+    }
   }
 
-  async remove(userId: number, languageId: number): Promise<void> {
+  async remove(userId: number, languageId: number,userIdFromToken:number): Promise<void> {
+    if(userIdFromToken!=userId){
+      throw new BadRequestException("You are not allowed to add languages to this user")
+    }
     const result = await this.userLanguageRepository.delete({
       userId: userId,
       languageId: languageId,
@@ -43,21 +52,21 @@ export class UserLanguagesService {
     }
   }
 
-  async getAll(userId: number): Promise<UserLanguage[]> {
-    const userLanguages = await this.userLanguageRepository.find({
+  async getAll(userId: number,userIdFromToken:number): Promise<UserLanguage[]> {
+    if(userIdFromToken!=userId){
+      throw new BadRequestException("You are not allowed to add languages to this user")
+    }
+    return this.userLanguageRepository.find({
       where: { userId: userId },
     });
-    console.log(userLanguages);
-    return userLanguages;
   }
-  async getOne(userId: number, languageId: number): Promise<UserLanguage[]> {
-    const userLanguages = await this.userLanguageRepository.find({
+  async getOne(userId: number, languageId: number,userIdFromToken:number): Promise<UserLanguage[]> {
+    if(userIdFromToken!=userId){
+      throw new BadRequestException("You are not allowed to add languages to this user")
+    }
+    return this.userLanguageRepository.find({
       where: { userId: userId, languageId: languageId },
-      relations: {
-        language: true,
-      },
+      
     });
-    console.log(userLanguages);
-    return userLanguages;
   }
 }

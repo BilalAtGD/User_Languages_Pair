@@ -5,7 +5,7 @@ export class SeedAdmin1791358464401 implements MigrationInterface {
     public async up(queryRunner: QueryRunner): Promise<void> {
   await queryRunner.query(`
     INSERT INTO "users" ("name", "email", "password", "role")
-    VALUES ('Bilal', 'bilal@gmail.com', '123456', 'Admin')
+    VALUES ('Bilal', 'bilal@gmail.com', '123456', 'admin')
   `);
 }
     public async down(queryRunner: QueryRunner): Promise<void> {

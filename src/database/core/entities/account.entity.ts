@@ -40,6 +40,8 @@ export class Account {
   })
   type:AccountType
   
+  @Column({ name: 'user_id' })
+  userId:number
 
   @ManyToOne(() => User, (user) => user.account, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'user_id' })

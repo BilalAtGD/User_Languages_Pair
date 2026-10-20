@@ -16,6 +16,13 @@ export class Transaction {
   @Column({ name: 'amount' })
   amount: number;
 
+  @Column({ name: 'from_account_id' })
+  fromAccountId:number;
+  
+  @Column({ name: 'to_account_id' })
+  toAccountId:number;
+
+
   @ManyToOne(() => Account, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'from_account_id' })
   fromAccount: Account;

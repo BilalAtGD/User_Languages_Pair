@@ -1,15 +1,19 @@
 import {
  
   ConflictException,
+  HttpException,
+  HttpStatus,
   Injectable,
   NotFoundException,
  
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { QueryFailedError, Repository } from 'typeorm';
 import { Language } from '../database/core/entities/language.entity';
 import { CreateLanguageDto } from './dto/create-language.dto';
 import { UpdateLanguageDto } from './dto/update-language.dto';
+import { errorCodes } from '../utils/db-errors';
+
 
 
 @Injectable()
@@ -20,16 +24,32 @@ export class LanguagesService {
   ) {}
 
   async create(createLanguage: CreateLanguageDto): Promise<Language> {
-    const existing = await this.languageRepository.findOne({
-      where: { name: createLanguage.name },
-    });
-    if (existing) {
-      throw new ConflictException(
-        `Language with the name ${existing.name} already exists`,
-      );
+    try{
+
+      const languageModel = this.languageRepository.create(createLanguage);
+      return await this.languageRepository.save(languageModel);
+    }catch(e){
+
+      if(e instanceof QueryFailedError){
+        const driverError=e.driverError as {code?:string}
+        if(driverError.code == errorCodes.DUPLICATE_REQUEST){
+          throw new HttpException(
+            "Language with that name already exists",
+            HttpStatus.CONFLICT
+          )
+        }
+
+        throw new HttpException(
+          'Some error has happened',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+
+      throw new Error("Failed Request");
+      
+      
     }
-    const language = this.languageRepository.create(createLanguage);
-    return this.languageRepository.save(language);
+     
   }
 
   async getAll(): Promise<Language[]> {
